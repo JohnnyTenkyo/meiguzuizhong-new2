@@ -110,3 +110,21 @@
 - [x] 创建 API 成本审查报告
 - [x] 测试验证系统功能
 - [ ] 创建完全免费版本的检查点
+
+## Truth Social 显示修复（完整认证配置）
+- [ ] 配置 Truth Social access_token
+- [ ] 配置 Truth Social account ID
+- [ ] 配置 Truth Social client_id 和 client_secret
+- [ ] 更新 Python 脚本使用完整认证信息
+- [ ] 修复 Python JSON 模块错误
+- [ ] 测试获取特朗普帖子
+- [ ] 创建修复后的检查点
+
+## 彻底排查付费 API（消费金额仍在增长）
+- [x] 检查 Twitter API 是否真的免费（发现使用 callDataApi 产生费用）
+- [x] 检查 callDataApi 的实际费用（确认是 Manus 付费 Data API）
+- [x] 禁用 Twitter API（改为返回空数据）
+- [ ] 检查前端是否有直接 API 调用
+- [ ] 检查所有路由中的其他 API 调用
+- [ ] 监控消费金额变化
+- [ ] 创建完全零成本版本
