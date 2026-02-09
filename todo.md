@@ -82,3 +82,10 @@
 - [x] 验证数据库连接
 - [ ] 创建检查点
 - [ ] 提供给用户确认
+
+## Python 依赖安装（Truth Social 支持）
+- [x] 安装 curl-cffi 库
+- [x] 安装 truthbrush 库
+- [x] 测试 Truth Social API 连接
+- [x] 验证用户查询功能
+- [ ] 创建新检查点
