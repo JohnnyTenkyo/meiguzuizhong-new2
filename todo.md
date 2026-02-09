@@ -99,3 +99,14 @@
 - [x] 测试 Python 脚本获取特朗普帖子
 - [x] 运行 vitest 测试验证功能
 - [ ] 创建修复后的检查点
+
+## API 成本审查（确保零运维成本）
+- [x] 审查所有 Manus 内置 API 调用
+- [x] 检查 Twitter API 使用情况（确认使用 Manus 免费 API）
+- [x] 检查 LLM API 使用情况（发现使用 invokeLLM）
+- [x] 检查其他可能的付费服务
+- [x] 保留 Twitter API（使用 Manus 免费 API）
+- [x] 移除 FOCI LLM 功能（改为直接返回数据）
+- [x] 创建 API 成本审查报告
+- [x] 测试验证系统功能
+- [ ] 创建完全免费版本的检查点

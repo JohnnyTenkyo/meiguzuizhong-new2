@@ -217,39 +217,29 @@ export const fociRouter = router({
         }
       }
 
-      // Build response using LLM
-      const { invokeLLM } = await import("./_core/llm");
+      // 直接返回 FOCI 数据（不使用 LLM 以保持完全免费）
+      let response = "📊 **FOCI 数据查询结果**\n\n";
       
-      const systemPrompt = `你是 FOCI 智能助手（Focus On Core Ideas），一个专业的美股财经AI助手。
-你的数据来源于 AlphaMoe 平台，追踪 60+ 中文财经博主的实时观点和持仓。
-
-你的能力包括：
-- 分析股票情绪（看涨/看跌/中性/观望）
-- 提供每日市场摘要
-- 追踪博主持仓和分析逻辑
-- 搜索特定话题的观点
-
-回答时请：
-1. 使用中文回答
-2. 基于实际数据给出分析
-3. 标注数据来源（博主名称）
-4. 给出简洁但有深度的分析
-5. 适当使用 emoji 增加可读性
-
-以下是从 FOCI 系统获取的实时数据：
-${JSON.stringify(fociData, null, 2)}`;
-
-      const result = await invokeLLM({
-        messages: [
-          { role: "system", content: systemPrompt },
-          ...(input.context ? [{ role: "assistant" as const, content: input.context }] : []),
-          { role: "user", content: input.message },
-        ],
-      });
-
-      const aiResponse = result.choices[0]?.message?.content;
+      if (fociData.length === 0) {
+        response += "⚠️ 暂无相关数据";
+      } else {
+        for (const item of fociData) {
+          if (item.type === "sentiment") {
+            response += `📊 **股票情绪分析**\n${JSON.stringify(item.data, null, 2)}\n\n`;
+          } else if (item.type === "summary") {
+            response += `📝 **市场摘要**\n${JSON.stringify(item.data, null, 2)}\n\n`;
+          } else if (item.type === "holdings") {
+            response += `💼 **博主持仓**\n${JSON.stringify(item.data, null, 2)}\n\n`;
+          } else if (item.type === "viewpoints") {
+            response += `💬 **观点搜索**\n${JSON.stringify(item.data, null, 2)}\n\n`;
+          }
+        }
+      }
+      
+      response += "\n---\n🔗 数据来源：AlphaMoe FOCI 平台";
+      
       return {
-        response: typeof aiResponse === "string" ? aiResponse : JSON.stringify(aiResponse),
+        response,
         fociData,
       };
     }),

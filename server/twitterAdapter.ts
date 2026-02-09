@@ -28,6 +28,7 @@ interface TwitterTweet {
 
 /**
  * 获取 Twitter 用户信息
+ * 使用 Manus 内置免费 API
  */
 export async function getTwitterUserProfile(username: string): Promise<TwitterUser | null> {
   try {
@@ -67,6 +68,7 @@ export async function getTwitterUserProfile(username: string): Promise<TwitterUs
 
 /**
  * 通过用户名获取推文
+ * 使用 Manus 内置免费 API
  */
 export async function getTwitterTweetsByUsername(
   username: string,
