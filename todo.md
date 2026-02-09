@@ -89,3 +89,13 @@
 - [x] 测试 Truth Social API 连接
 - [x] 验证用户查询功能
 - [ ] 创建新检查点
+
+## Truth Social 显示问题修复
+- [x] 检查后端 Truth Social API 调用
+- [x] 重写 truthSocialAdapter 使用 Python truthbrush
+- [x] 创建 Python 辅助脚本（truth_social_helper.py）
+- [x] 修复环境变量配置问题
+- [x] 修复 __dirname 问题
+- [x] 测试 Python 脚本获取特朗普帖子
+- [x] 运行 vitest 测试验证功能
+- [ ] 创建修复后的检查点
