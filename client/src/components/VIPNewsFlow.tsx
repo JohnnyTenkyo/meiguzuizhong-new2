@@ -65,7 +65,7 @@ export default function VIPNewsFlow({ watchlistTickers = [] }: { watchlistTicker
   const [selectedPerson, setSelectedPerson] = useState<VIPPerson | null>(null);
   const [contentTab, setContentTab] = useState<ContentTab>("original");
   const [originalTweets, setOriginalTweets] = useState<NewsItem[]>([]);
-
+  const [retweetsReplies, setRetweetsReplies] = useState<NewsItem[]>([]);
   const [truthSocialPosts, setTruthSocialPosts] = useState<NewsItem[]>([]);
   const [newsFeed, setNewsFeed] = useState<NewsItem[]>([]);
   // AI 摘要功能已移除（确保网站完全免费）
@@ -144,6 +144,7 @@ export default function VIPNewsFlow({ watchlistTickers = [] }: { watchlistTicker
 
   // 获取选中人物的内容
   const fetchPersonContent = useCallback(async (person: VIPPerson) => {
+    console.log('[VIPNewsFlow] Starting to fetch content for:', person.name);
     setLoading(true);
     setOriginalTweets([]);
     setRetweetsReplies([]);
@@ -153,6 +154,7 @@ export default function VIPNewsFlow({ watchlistTickers = [] }: { watchlistTicker
     try {
       // 1. 获取原创推文
       if (person.twitterHandle) {
+        console.log('[VIPNewsFlow] Fetching Twitter posts for:', person.twitterHandle);
         const input1 = encodeURIComponent(
           JSON.stringify({
             json: {
@@ -164,6 +166,7 @@ export default function VIPNewsFlow({ watchlistTickers = [] }: { watchlistTicker
         const resp1 = await fetch(`/api/trpc/newsflow.getPersonOriginalTweets?input=${input1}`);
         const data1 = await resp1.json();
         const tweets = data1?.result?.data?.json || data1?.result?.data || [];
+        console.log('[VIPNewsFlow] Original tweets fetched:', tweets.length);
         setOriginalTweets(Array.isArray(tweets) ? tweets : []);
 
         // 2. 获取所有推文（用于分离转发和评论）
@@ -179,6 +182,7 @@ export default function VIPNewsFlow({ watchlistTickers = [] }: { watchlistTicker
         const data2 = await resp2.json();
         const allTweets = data2?.result?.data?.json || data2?.result?.data || [];
         const retweets = Array.isArray(allTweets) ? allTweets.filter((t: NewsItem) => t.isRetweet || t.isReply) : [];
+        console.log('[VIPNewsFlow] Retweets/Replies fetched:', retweets.length);
         setRetweetsReplies(retweets);
       }
 
@@ -216,13 +220,16 @@ export default function VIPNewsFlow({ watchlistTickers = [] }: { watchlistTicker
       const resp4 = await fetch(`/api/trpc/newsflow.getPersonNews?input=${input4}`);
       const data4 = await resp4.json();
       const news = data4?.result?.data?.json || data4?.result?.data || [];
+      console.log('[VIPNewsFlow] News fetched:', news.length);
       setNewsFeed(Array.isArray(news) ? news : []);
+      console.log('[VIPNewsFlow] All content fetched successfully');
     } catch (err) {
       console.error("Error fetching content:", err);
     } finally {
+      console.log('[VIPNewsFlow] Setting loading to false');
       setLoading(false);
     }
-  }, []);
+  }, [])
 
   // 选中人物时加载内容
   useEffect(() => {

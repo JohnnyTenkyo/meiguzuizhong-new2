@@ -75,7 +75,7 @@ authApiRouter.post("/login", async (req, res) => {
     }
 
     // Update last signed in
-    await db!.update(localUsers).set({ lastSignedIn: new Date() }).where(eq(localUsers.id, user.id));
+    await db!.update(localUsers).set({ lastSignedIn: new Date().toISOString() }).where(eq(localUsers.id, user.id));
 
     const token = jwt.sign({ userId: user.id, username: user.username }, JWT_SECRET, { expiresIn: "30d" });
 
