@@ -136,11 +136,11 @@ export default function Home() {
             <>
               <span className="data-mono font-medium">${q.price.toFixed(2)}</span>
               <span className={`data-mono text-xs px-2 py-0.5 rounded font-medium ${
-                q.change >= 0 
+                (Number(q.changePercent) || 0) >= 0 
                   ? 'text-red-500 bg-red-500/10' 
                   : 'text-green-500 bg-green-500/10'
               }`}>
-                {q.changePercent >= 0 ? '+' : ''}{q.changePercent.toFixed(2)}%
+                {(Number(q.changePercent) || 0) >= 0 ? '+' : ''}{(Number(q.changePercent) || 0).toFixed(2)}%
               </span>
             </>
           ) : (
