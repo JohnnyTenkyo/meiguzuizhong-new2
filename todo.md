@@ -175,3 +175,14 @@
 - [x] 测试缓存功能（成功，加载速度极快）
 - [x] Truth Social 暂时禁用（API 太慢，40-50秒，影响用户体验）
 - [ ] 创建检查点
+
+## Twitter 推文排序和 Truth Social curl-cffi 集成
+- [x] 修复 Twitter 推文排序（最新在前，按 created_at 降序）
+- [x] 安装 curl-cffi Python 库（已安装 0.14.0）
+- [x] 使用 curl-cffi 重写 Truth Social Python 脚本（truth_social_cffi.py）
+- [x] 配置最新的 Truth Social 认证信息（registration-data token）
+- [x] 创建 shell 脚本包装器解决 Python 版本问题（run_truth_social.sh）
+- [x] 测试 Truth Social 数据获取（成功，<5秒）
+- [x] 启用 Truth Social 缓存刷新（20 条帖子成功缓存）
+- [x] 测试前端显示（20 条 Truth Social 帖子成功显示）
+- [ ] 创建检查点

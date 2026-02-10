@@ -7,6 +7,7 @@ import { getDb } from "./db";
 import { socialMediaCache } from "../drizzle/schema";
 import { eq, and } from "drizzle-orm";
 import { getTwitterTweetsByUsername } from "./twitterAdapter";
+import { getTruthSocialPosts } from "./truthSocialAdapter";
 
 // 缓存有效期：5分钟
 const CACHE_TTL_MS = 5 * 60 * 1000;
@@ -17,8 +18,7 @@ const REFRESH_INTERVAL_MS = 5 * 60 * 1000;
 // 需要缓存的账号列表
 const ACCOUNTS_TO_CACHE = [
   { platform: "twitter" as const, handle: "realDonaldTrump" },
-  // Truth Social 暂时禁用，因为 API 太慢
-  // { platform: "truthsocial" as const, handle: "realDonaldTrump" },
+  { platform: "truthsocial" as const, handle: "realDonaldTrump" },
 ];
 
 /**
@@ -87,9 +87,7 @@ export async function refreshCache(
     if (platform === "twitter") {
       posts = await getTwitterTweetsByUsername(handle, 20);
     } else if (platform === "truthsocial") {
-      // Truth Social 暂时禁用
-      console.log("Truth Social cache refresh skipped (API too slow)");
-      return;
+      posts = await getTruthSocialPosts(handle, 20);
     }
 
     if (posts.length === 0) {
