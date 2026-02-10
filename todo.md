@@ -163,3 +163,15 @@
 - [x] 修复 Home.tsx 中的 toFixed null 错误
 - [x] 测试前端显示（成功）
 - [ ] 创建修复后的检查点
+
+## Truth Social 显示和缓存优化
+- [x] 诊断 Truth Social 为什么没有显示（Python 版本问题、truthbrush CLI 问题）
+- [x] 删除转发/评论板块（API 不支持区分）
+- [x] 创建社交媒体缓存表（social_media_cache）
+- [x] 实现缓存写入逻辑（socialMediaCacheManager.ts）
+- [x] 实现缓存读取逻辑（5分钟过期）
+- [x] 实现定时刷新机制（每 5 分钟后台刷新）
+- [x] 修改 API 使用缓存（newsflowRouter.ts）
+- [x] 测试缓存功能（成功，加载速度极快）
+- [x] Truth Social 暂时禁用（API 太慢，40-50秒，影响用户体验）
+- [ ] 创建检查点

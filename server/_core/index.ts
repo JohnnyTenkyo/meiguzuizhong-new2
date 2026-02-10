@@ -10,6 +10,7 @@ import { serveStatic, setupVite } from "./vite";
 import { initMomentumWebSocket } from "../momentumWebSocket";
 import { authApiRouter } from "../authRouter";
 import { backtestApiRouter } from "../backtestRouter";
+import { startCacheRefreshJob } from "../socialMediaCacheManager";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -68,6 +69,9 @@ async function startServer() {
 
   server.listen(port, () => {
     console.log(`Server running on http://localhost:${port}/`);
+    
+    // 启动社交媒体缓存刷新任务
+    startCacheRefreshJob();
   });
 }
 

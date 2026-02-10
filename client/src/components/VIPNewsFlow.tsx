@@ -35,7 +35,7 @@ interface NewsItem {
   };
 }
 
-type ContentTab = "original" | "retweets" | "truthsocial" | "news";
+type ContentTab = "original" | "truthsocial" | "news";
 
 // ============================================================
 // 辅助函数
@@ -65,7 +65,7 @@ export default function VIPNewsFlow({ watchlistTickers = [] }: { watchlistTicker
   const [selectedPerson, setSelectedPerson] = useState<VIPPerson | null>(null);
   const [contentTab, setContentTab] = useState<ContentTab>("original");
   const [originalTweets, setOriginalTweets] = useState<NewsItem[]>([]);
-  const [retweetsReplies, setRetweetsReplies] = useState<NewsItem[]>([]);
+
   const [truthSocialPosts, setTruthSocialPosts] = useState<NewsItem[]>([]);
   const [newsFeed, setNewsFeed] = useState<NewsItem[]>([]);
   // AI 摘要功能已移除（确保网站完全免费）
@@ -146,7 +146,7 @@ export default function VIPNewsFlow({ watchlistTickers = [] }: { watchlistTicker
   const fetchPersonContent = useCallback(async (person: VIPPerson) => {
     setLoading(true);
     setOriginalTweets([]);
-    setRetweetsReplies([]);
+
     setTruthSocialPosts([]);
     setNewsFeed([]);
 
@@ -166,20 +166,7 @@ export default function VIPNewsFlow({ watchlistTickers = [] }: { watchlistTicker
         const tweets = data1?.result?.data?.json || data1?.result?.data || [];
         setOriginalTweets(Array.isArray(tweets) ? tweets : []);
 
-        // 2. 获取所有推文（用于分离转发和评论）
-        const input2 = encodeURIComponent(
-          JSON.stringify({
-            json: {
-              twitterHandle: person.twitterHandle,
-              limit: 40,
-            }
-          })
-        );
-        const resp2 = await fetch(`/api/trpc/newsflow.getPersonTwitter?input=${input2}`);
-        const data2 = await resp2.json();
-        const allTweets = data2?.result?.data?.json || data2?.result?.data || [];
-        const retweets = Array.isArray(allTweets) ? allTweets.filter((t: NewsItem) => t.isRetweet || t.isReply) : [];
-        setRetweetsReplies(retweets);
+
       }
 
       // 3. 获取 Truth Social 帖子
@@ -240,8 +227,7 @@ export default function VIPNewsFlow({ watchlistTickers = [] }: { watchlistTicker
     switch (contentTab) {
       case "original":
         return originalTweets;
-      case "retweets":
-        return retweetsReplies;
+
       case "truthsocial":
         return truthSocialPosts;
       case "news":
@@ -760,22 +746,7 @@ export default function VIPNewsFlow({ watchlistTickers = [] }: { watchlistTicker
                       >
                         💬 原创推文 {originalTweets.length > 0 && `(${originalTweets.length})`}
                       </button>
-                      <button
-                        onClick={() => setContentTab("retweets")}
-                        style={{
-                          padding: "6px 14px",
-                          borderRadius: 8,
-                          border: "none",
-                          fontSize: 12,
-                          fontWeight: 600,
-                          cursor: "pointer",
-                          background: contentTab === "retweets" ? "#3b82f6" : "rgba(30,41,59,0.5)",
-                          color: contentTab === "retweets" ? "#fff" : "#94a3b8",
-                          transition: "all 0.2s",
-                        }}
-                      >
-                        🔄 转发/评论 {retweetsReplies.length > 0 && `(${retweetsReplies.length})`}
-                      </button>
+
                     </>
                   )}
                   {selectedPerson.truthSocialHandle && (

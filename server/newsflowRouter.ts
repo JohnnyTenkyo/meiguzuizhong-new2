@@ -4,6 +4,7 @@ import https from "https";
 import http from "http";
 import { getTwitterTweetsByUsername } from "./twitterAdapter";
 import { getTruthSocialPosts, isTruthSocialConfigured } from "./truthSocialAdapter";
+import { getCachedPosts } from "./socialMediaCacheManager";
 // AI 摘要功能已移除（确保网站完全免费）
 import { getDb } from "./db";
 import { trackedPeople } from "../drizzle/schema";
@@ -501,8 +502,15 @@ export const newsflowRouter = router({
           return [];
         }
 
-        // 获取所有推文
-        const tweets = await getTwitterTweetsByUsername(input.twitterHandle, input.limit * 2);
+        // 优先从缓存获取
+        const cachedPosts = await getCachedPosts("twitter", input.twitterHandle, input.limit * 2);
+        let tweets = cachedPosts;
+        
+        // 如果缓存不存在或已过期，从 API 获取
+        if (!tweets) {
+          console.log(`Cache miss for Twitter @${input.twitterHandle}, fetching from API...`);
+          tweets = await getTwitterTweetsByUsername(input.twitterHandle, input.limit * 2);
+        }
         
         // 过滤出原创推文（非转发且非评论）
         const originalTweets = tweets.filter(tweet => !tweet.is_retweet && !tweet.is_reply);

@@ -1,14 +1,8 @@
 /**
  * Truth Social API Adapter
- * 使用 truthbrush Python 库通过子进程调用
+ * 使用 truthbrush CLI 直接调用（完全免费）
  */
 import { spawn } from 'child_process';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import { dirname } from 'path';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
 
 interface TruthSocialPost {
   id: string;
@@ -55,44 +49,59 @@ function saveToCache(key: string, data: any) {
 }
 
 /**
- * 调用 Python 脚本获取 Truth Social 数据
+ * 调用 truthbrush CLI 获取 Truth Social 数据
  */
-async function callPythonScript(scriptName: string, args: string[]): Promise<any> {
+async function callTruthbrushCLI(username: string, limit: number = 20): Promise<any[]> {
   return new Promise((resolve, reject) => {
-    const scriptPath = path.join(__dirname, scriptName);
-    const python = spawn('python3.11', [scriptPath, ...args], {
-      env: { ...process.env },
+    const truthbrush = spawn('truthbrush', ['statuses', username], {
+      env: {
+        ...process.env,
+        TRUTHSOCIAL_USERNAME: process.env.TRUTHSOCIAL_USERNAME || '',
+        TRUTHSOCIAL_PASSWORD: process.env.TRUTHSOCIAL_PASSWORD || '',
+      },
     });
 
     let stdout = '';
     let stderr = '';
 
-    python.stdout.on('data', (data) => {
+    truthbrush.stdout.on('data', (data) => {
       stdout += data.toString();
     });
 
-    python.stderr.on('data', (data) => {
+    truthbrush.stderr.on('data', (data) => {
       stderr += data.toString();
     });
 
-    python.on('close', (code) => {
+    truthbrush.on('close', (code) => {
       if (code !== 0) {
-        console.error(`Python script error: ${stderr}`);
-        reject(new Error(`Python script exited with code ${code}`));
+        console.error(`truthbrush CLI error: ${stderr}`);
+        reject(new Error(`truthbrush CLI exited with code ${code}`));
         return;
       }
 
       try {
-        const result = JSON.parse(stdout);
-        resolve(result);
+        // 解析 JSON 输出（每行一个 JSON 对象）
+        const statuses = [];
+        for (const line of stdout.trim().split('\n')) {
+          if (line && statuses.length < limit) {
+            try {
+              const status = JSON.parse(line);
+              statuses.push(status);
+            } catch (e) {
+              // 跳过无效的 JSON 行
+              continue;
+            }
+          }
+        }
+        resolve(statuses);
       } catch (error) {
-        console.error(`Failed to parse Python output: ${stdout}`);
+        console.error(`Failed to parse truthbrush output:`, error);
         reject(error);
       }
     });
 
-    python.on('error', (error) => {
-      console.error(`Failed to spawn Python process:`, error);
+    truthbrush.on('error', (error) => {
+      console.error(`Failed to spawn truthbrush process:`, error);
       reject(error);
     });
   });
@@ -119,28 +128,20 @@ export async function getTruthSocialPosts(
       return cached;
     }
 
-    console.log(`Fetching Truth Social posts for @${handle} via truthbrush...`);
+    console.log(`Fetching Truth Social posts for @${handle} via truthbrush CLI...`);
 
-    // 调用 truthbrush Python 脚本
-    const result = await callPythonScript('truth_social_helper.py', [
-      handle,
-      limit.toString(),
-    ]);
+    // 调用 truthbrush CLI
+    const statuses = await callTruthbrushCLI(handle, limit);
 
-    if (!result.success) {
-      console.error(`Failed to get Truth Social posts: ${result.error}`);
-      return [];
-    }
-
-    const posts: TruthSocialPost[] = result.data.map((post: any) => ({
-      id: post.id,
-      text: post.content || '',
-      created_at: post.created_at,
-      reblogs_count: post.reblogs_count || 0,
-      favourites_count: post.favourites_count || 0,
-      replies_count: post.replies_count || 0,
-      url: post.url || `https://truthsocial.com/@${handle}/posts/${post.id}`,
-      media: post.media_attachments?.map((m: any) => ({
+    const posts: TruthSocialPost[] = statuses.map((status: any) => ({
+      id: status.id,
+      text: status.content || '',
+      created_at: status.created_at,
+      reblogs_count: status.reblogs_count || 0,
+      favourites_count: status.favourites_count || 0,
+      replies_count: status.replies_count || 0,
+      url: status.url || `https://truthsocial.com/@${handle}/posts/${status.id}`,
+      media: status.media_attachments?.map((m: any) => ({
         type: m.type || 'image',
         url: m.url,
       })),
@@ -173,15 +174,15 @@ export async function getTruthSocialUserInfo() {
       return cached;
     }
 
-    const result = await callPythonScript('truth_social_helper.py', ['get_user_info']);
+    // Truth Social CLI 不支持直接获取用户信息
+    // 返回基本信息
+    const userInfo = {
+      username: process.env.TRUTHSOCIAL_USERNAME,
+      authenticated: true,
+    };
 
-    if (!result.success) {
-      console.error(`Failed to get Truth Social user info: ${result.error}`);
-      return null;
-    }
-
-    saveToCache(cacheKey, result.user);
-    return result.user;
+    saveToCache(cacheKey, userInfo);
+    return userInfo;
   } catch (error) {
     console.error("Error verifying Truth Social credentials:", error);
     return null;

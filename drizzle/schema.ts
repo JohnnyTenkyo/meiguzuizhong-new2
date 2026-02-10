@@ -141,3 +141,34 @@ export const trackedPeople = mysqlTable("tracked_people", {
 
 export type TrackedPerson = typeof trackedPeople.$inferSelect;
 export type InsertTrackedPerson = typeof trackedPeople.$inferInsert;
+
+/**
+ * Social media posts cache - stores Twitter and Truth Social posts
+ * Refreshed periodically by background jobs to improve loading speed
+ */
+export const socialMediaCache = mysqlTable("social_media_cache", {
+  id: int("id").autoincrement().primaryKey(),
+  /** Platform: 'twitter' or 'truthsocial' */
+  platform: mysqlEnum("platform", ["twitter", "truthsocial"]).notNull(),
+  /** User handle (e.g., 'realDonaldTrump') */
+  handle: varchar("handle", { length: 64 }).notNull(),
+  /** Post ID from the platform */
+  postId: varchar("postId", { length: 64 }).notNull(),
+  /** Post content/text */
+  content: text("content").notNull(),
+  /** Post creation timestamp */
+  createdAt: timestamp("createdAt").notNull(),
+  /** Engagement metrics (JSON) */
+  metrics: text("metrics"),
+  /** Post URL */
+  url: text("url"),
+  /** Media attachments (JSON array) */
+  media: text("media"),
+  /** Last updated timestamp */
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  /** Cache timestamp */
+  cachedAt: timestamp("cachedAt").defaultNow().notNull(),
+});
+
+export type SocialMediaCache = typeof socialMediaCache.$inferSelect;
+export type InsertSocialMediaCache = typeof socialMediaCache.$inferInsert;
