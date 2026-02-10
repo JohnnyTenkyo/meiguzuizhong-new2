@@ -669,6 +669,11 @@ export const newsflowRouter = router({
               pubDate: post.created_at,
               source: "Truth Social",
               type: "social" as const,
+              engagement: {
+                likes: post.favourites_count || 0,
+                retweets: post.reblogs_count || 0,
+                replies: post.replies_count || 0,
+              },
             }));
             socialItems.push(...truthItems);
           } catch (err) {
@@ -687,6 +692,12 @@ export const newsflowRouter = router({
               pubDate: tweet.created_at,
               source: "X (Twitter)",
               type: "social" as const,
+              engagement: {
+                likes: tweet.favorite_count || 0,
+                retweets: tweet.retweet_count || 0,
+                replies: tweet.reply_count || 0,
+                quotes: tweet.quote_count || 0,
+              },
             }));
             socialItems.push(...twitterItems);
           } catch (err) {

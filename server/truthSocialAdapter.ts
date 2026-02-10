@@ -60,7 +60,7 @@ function saveToCache(key: string, data: any) {
 async function callPythonScript(scriptName: string, args: string[]): Promise<any> {
   return new Promise((resolve, reject) => {
     const scriptPath = path.join(__dirname, scriptName);
-    const python = spawn('python3', [scriptPath, ...args], {
+    const python = spawn('python3.11', [scriptPath, ...args], {
       env: { ...process.env },
     });
 

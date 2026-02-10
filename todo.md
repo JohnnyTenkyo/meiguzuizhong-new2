@@ -152,3 +152,14 @@
 - [x] 创建 Python 辅助脚本
 - [x] 更新 truthSocialAdapter 使用 truthbrush
 - [ ] 创建检查点
+
+## VIP 信息流显示问题修复
+- [x] 检查 newsflowRouter 的 API 实现
+- [x] 检查 VIPNewsFlow 前端组件
+- [x] 修复 Python 版本问题（使用 python3.11）
+- [x] 测试 Truth Social 数据获取（成功）
+- [x] 添加 Twitter engagement 数据（点赞、转发、评论）
+- [x] 添加 Truth Social engagement 数据
+- [x] 修复 Home.tsx 中的 toFixed null 错误
+- [x] 测试前端显示（成功）
+- [ ] 创建修复后的检查点
