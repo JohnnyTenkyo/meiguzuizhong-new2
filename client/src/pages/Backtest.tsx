@@ -208,8 +208,13 @@ export default function Backtest() {
             {sessions.map(session => {
               // 直接使用数据库中缓存的总资产和盈亏数据
               const totalAssets = session.totalAssets ? Number(session.totalAssets) : Number(session.currentBalance);
-              const totalPnl = session.totalPnL ? Number(session.totalPnL) : 0;
-              const totalPnlPercent = session.totalPnLPercent ? Number(session.totalPnLPercent) : 0;
+              const initialBalance = Number(session.initialBalance);
+              const totalPnl = session.totalPnL ? Number(session.totalPnL) : (totalAssets - initialBalance);
+              // 如果数据库中没有 totalPnLPercent，则从 totalAssets 和 initialBalance 计算
+              let totalPnlPercent = session.totalPnLPercent ? Number(session.totalPnLPercent) : 0;
+              if (totalPnlPercent === 0 && session.totalAssets) {
+                totalPnlPercent = ((totalAssets - initialBalance) / initialBalance) * 100;
+              }
               const posCount = session.positionCount || 0;
               const positionValue = totalAssets - Number(session.currentBalance);
               const hasMarketValue = session.totalAssets !== null && session.totalAssets !== undefined;
