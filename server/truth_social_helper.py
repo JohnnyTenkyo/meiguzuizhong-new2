@@ -1,146 +1,96 @@
 #!/usr/bin/env python3
 """
-Truth Social Helper Script
-使用 curl-cffi 直接调用 Truth Social API，绕过 Cloudflare
+Truth Social API 助手脚本
+使用 truthbrush 库（斯坦福大学维护）
 """
 import sys
 import json
 import os
-from curl_cffi import requests
+import subprocess
 
-# Truth Social API 基础 URL
-BASE_URL = "https://truthsocial.com/api/v1"
-
-def get_headers(access_token):
-    """构建请求头"""
-    return {
-        "Authorization": f"Bearer {access_token}",
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36",
-        "Accept": "application/json",
-        "Accept-Language": "en-US,en;q=0.9",
-        "Referer": "https://truthsocial.com/",
-        "Origin": "https://truthsocial.com",
-    }
-
-def get_posts(username, limit=20):
-    """获取用户的帖子"""
+def get_user_statuses(username, limit=20):
+    """
+    获取用户的帖子
+    使用 truthbrush CLI
+    """
     try:
-        access_token = os.environ.get('TRUTHSOCIAL_ACCESS_TOKEN')
+        # 设置环境变量
+        env = os.environ.copy()
+        env['TRUTHSOCIAL_USERNAME'] = os.getenv('TRUTHSOCIAL_USERNAME', '')
+        env['TRUTHSOCIAL_PASSWORD'] = os.getenv('TRUTHSOCIAL_PASSWORD', '')
         
-        if not access_token:
-            return {'success': False, 'error': 'TRUTHSOCIAL_ACCESS_TOKEN not set'}
+        if not env['TRUTHSOCIAL_USERNAME'] or not env['TRUTHSOCIAL_PASSWORD']:
+            return {
+                "success": False,
+                "error": "Truth Social credentials not configured"
+            }
         
-        # 首先查找用户 ID
-        lookup_url = f"{BASE_URL}/accounts/lookup"
-        params = {"acct": username}
-        headers = get_headers(access_token)
-        
-        # 使用 curl_cffi 发送请求（绕过 Cloudflare）
-        response = requests.get(
-            lookup_url,
-            params=params,
-            headers=headers,
-            impersonate="chrome110",
-            timeout=10
+        # 调用 truthbrush CLI
+        result = subprocess.run(
+            ['truthbrush', 'statuses', username],
+            capture_output=True,
+            text=True,
+            timeout=30,
+            env=env
         )
         
-        if response.status_code != 200:
-            return {'success': False, 'error': f'Failed to lookup user: {response.status_code}'}
+        if result.returncode != 0:
+            return {
+                "success": False,
+                "error": f"truthbrush command failed: {result.stderr}"
+            }
         
-        user_data = response.json()
-        user_id = user_data.get('id')
-        
-        if not user_id:
-            return {'success': False, 'error': 'User ID not found'}
-        
-        # 获取用户的帖子
-        statuses_url = f"{BASE_URL}/accounts/{user_id}/statuses"
-        params = {"limit": limit}
-        
-        response = requests.get(
-            statuses_url,
-            params=params,
-            headers=headers,
-            impersonate="chrome110",
-            timeout=10
-        )
-        
-        if response.status_code != 200:
-            return {'success': False, 'error': f'Failed to fetch posts: {response.status_code}'}
-        
-        posts = response.json()
+        # 解析 JSON 输出（每行一个 JSON 对象）
+        statuses = []
+        for line in result.stdout.strip().split('\n'):
+            if line:
+                try:
+                    status = json.loads(line)
+                    statuses.append({
+                        "id": status.get("id"),
+                        "created_at": status.get("created_at"),
+                        "content": status.get("content", ""),
+                        "url": status.get("url"),
+                        "replies_count": status.get("replies_count", 0),
+                        "reblogs_count": status.get("reblogs_count", 0),
+                        "favourites_count": status.get("favourites_count", 0),
+                        "media_attachments": status.get("media_attachments", []),
+                        "account": {
+                            "username": status.get("account", {}).get("username"),
+                            "display_name": status.get("account", {}).get("display_name"),
+                            "followers_count": status.get("account", {}).get("followers_count", 0),
+                            "avatar": status.get("account", {}).get("avatar"),
+                        }
+                    })
+                    
+                    if len(statuses) >= limit:
+                        break
+                except json.JSONDecodeError:
+                    continue
         
         return {
-            'success': True,
-            'posts': posts,
-            'count': len(posts)
+            "success": True,
+            "data": statuses[:limit]
         }
         
-    except Exception as e:
-        return {'success': False, 'error': str(e)}
-
-def get_user_info(username):
-    """获取用户信息"""
-    try:
-        access_token = os.environ.get('TRUTHSOCIAL_ACCESS_TOKEN')
-        
-        if not access_token:
-            return {'success': False, 'error': 'TRUTHSOCIAL_ACCESS_TOKEN not set'}
-        
-        lookup_url = f"{BASE_URL}/accounts/lookup"
-        params = {"acct": username}
-        headers = get_headers(access_token)
-        
-        # 使用 curl_cffi 发送请求（绕过 Cloudflare）
-        response = requests.get(
-            lookup_url,
-            params=params,
-            headers=headers,
-            impersonate="chrome110",
-            timeout=10
-        )
-        
-        if response.status_code != 200:
-            return {'success': False, 'error': f'Failed to lookup user: {response.status_code}'}
-        
-        user_info = response.json()
-        
+    except subprocess.TimeoutExpired:
         return {
-            'success': True,
-            'user': user_info
+            "success": False,
+            "error": "Truth Social API request timeout"
         }
-        
     except Exception as e:
-        return {'success': False, 'error': str(e)}
+        return {
+            "success": False,
+            "error": str(e)
+        }
 
-def main():
+if __name__ == "__main__":
     if len(sys.argv) < 2:
-        print(json.dumps({'success': False, 'error': 'No command specified'}))
+        print(json.dumps({"success": False, "error": "Usage: python truth_social_helper.py <username>"}))
         sys.exit(1)
     
-    command = sys.argv[1]
+    username = sys.argv[1]
+    limit = int(sys.argv[2]) if len(sys.argv) > 2 else 20
     
-    if command == 'get_posts':
-        if len(sys.argv) < 3:
-            print(json.dumps({'success': False, 'error': 'Username required'}))
-            sys.exit(1)
-        
-        username = sys.argv[2]
-        limit = int(sys.argv[3]) if len(sys.argv) > 3 else 20
-        result = get_posts(username, limit)
-        
-    elif command == 'get_user_info':
-        if len(sys.argv) < 3:
-            print(json.dumps({'success': False, 'error': 'Username required'}))
-            sys.exit(1)
-        
-        username = sys.argv[2]
-        result = get_user_info(username)
-        
-    else:
-        result = {'success': False, 'error': f'Unknown command: {command}'}
-    
+    result = get_user_statuses(username, limit)
     print(json.dumps(result))
-
-if __name__ == '__main__':
-    main()

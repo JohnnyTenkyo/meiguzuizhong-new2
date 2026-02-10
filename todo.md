@@ -143,3 +143,12 @@
 - [x] 测试 Twitter 推文获取（成功）
 - [ ] 测试 VIP 信息流显示
 - [ ] 创建检查点
+
+## Truth Social Token 测试
+- [x] 发现 truthbrush（斯坦福大学维护）不需要 token
+- [x] 安装 truthbrush 库
+- [x] 配置 Truth Social 用户名和密码
+- [x] 测试 truthbrush CLI 获取特朗普帖子（成功）
+- [x] 创建 Python 辅助脚本
+- [x] 更新 truthSocialAdapter 使用 truthbrush
+- [ ] 创建检查点

@@ -32,7 +32,7 @@ const CACHE_TTL = 5 * 60 * 1000; // 5分钟缓存
  * 检查 Truth Social 是否已配置
  */
 export function isTruthSocialConfigured(): boolean {
-  return !!(process.env.TRUTHSOCIAL_TOKEN);
+  return !!(process.env.TRUTHSOCIAL_USERNAME && process.env.TRUTHSOCIAL_PASSWORD);
 }
 
 /**
@@ -119,11 +119,10 @@ export async function getTruthSocialPosts(
       return cached;
     }
 
-    console.log(`Fetching Truth Social posts for @${handle} via Python...`);
+    console.log(`Fetching Truth Social posts for @${handle} via truthbrush...`);
 
-    // 调用 Python 脚本
+    // 调用 truthbrush Python 脚本
     const result = await callPythonScript('truth_social_helper.py', [
-      'get_posts',
       handle,
       limit.toString(),
     ]);
@@ -133,9 +132,9 @@ export async function getTruthSocialPosts(
       return [];
     }
 
-    const posts: TruthSocialPost[] = result.posts.map((post: any) => ({
+    const posts: TruthSocialPost[] = result.data.map((post: any) => ({
       id: post.id,
-      text: post.text || post.content || '',
+      text: post.content || '',
       created_at: post.created_at,
       reblogs_count: post.reblogs_count || 0,
       favourites_count: post.favourites_count || 0,
