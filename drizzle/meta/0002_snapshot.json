@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "mysql",
-  "id": "6286bed7-3f1c-4e6b-8782-da0bf41f22b0",
+  "id": "67782bef-7761-4eee-bfa3-95486e141122",
   "prevId": "885529da-6a13-4ea4-9f1a-484017857e0d",
   "tables": {
     "backtest_positions": {
@@ -410,16 +410,16 @@
           "notNull": true,
           "autoincrement": false
         },
-        "handle": {
-          "name": "handle",
-          "type": "varchar(64)",
+        "account": {
+          "name": "account",
+          "type": "varchar(128)",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
         "postId": {
           "name": "postId",
-          "type": "varchar(64)",
+          "type": "varchar(128)",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
@@ -438,35 +438,12 @@
           "notNull": true,
           "autoincrement": false
         },
-        "metrics": {
-          "name": "metrics",
-          "type": "text",
+        "engagement": {
+          "name": "engagement",
+          "type": "json",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
-        },
-        "url": {
-          "name": "url",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "media": {
-          "name": "media",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "updatedAt": {
-          "name": "updatedAt",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "onUpdate": true,
-          "default": "(now())"
         },
         "cachedAt": {
           "name": "cachedAt",
@@ -487,7 +464,14 @@
           ]
         }
       },
-      "uniqueConstraints": {},
+      "uniqueConstraints": {
+        "social_media_cache_postId_unique": {
+          "name": "social_media_cache_postId_unique",
+          "columns": [
+            "postId"
+          ]
+        }
+      },
       "checkConstraint": {}
     },
     "tracked_people": {

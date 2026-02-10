@@ -1,163 +1,191 @@
-/**
- * Social Media Cache Manager
- * 管理 Twitter 和 Truth Social 数据的数据库缓存
- * 定时后台刷新，大幅提升加载速度
- */
 import { getDb } from "./db";
 import { socialMediaCache } from "../drizzle/schema";
-import { eq, and } from "drizzle-orm";
+import { eq, and, desc } from "drizzle-orm";
 import { getTwitterTweetsByUsername } from "./twitterAdapter";
-import { getTruthSocialPosts } from "./truthSocialAdapter";
+import { getTruthSocialPosts, isTruthSocialConfigured } from "./truthSocialAdapter";
 
-// 缓存有效期：5分钟
+// 缓存有效期：5 分钟
 const CACHE_TTL_MS = 5 * 60 * 1000;
 
-// 后台刷新间隔：5分钟
-const REFRESH_INTERVAL_MS = 5 * 60 * 1000;
+/**
+ * Google Translate 免费翻译
+ */
+async function translateText(text: string): Promise<string> {
+  try {
+    const encoded = encodeURIComponent(text);
+    const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=zh-CN&dt=t&q=${encoded}`;
+    const response = await fetch(url, { signal: AbortSignal.timeout(10000) });
+    const data = await response.json();
+    if (data && data[0] && Array.isArray(data[0])) {
+      return data[0].map((item: any) => item[0]).join('');
+    }
+    return text;
+  } catch (error) {
+    console.error('Translation error:', error);
+    return text;
+  }
+}
 
 // 需要缓存的账号列表
 const ACCOUNTS_TO_CACHE = [
-  { platform: "twitter" as const, handle: "realDonaldTrump" },
-  { platform: "truthsocial" as const, handle: "realDonaldTrump" },
+  { platform: 'twitter' as const, handle: '@realDonaldTrump' },
+  { platform: 'truthsocial' as const, handle: '@realDonaldTrump' },
 ];
 
 /**
- * 从数据库缓存获取社交媒体帖子
+ * 从缓存获取帖子
  */
-export async function getCachedPosts(
-  platform: "twitter" | "truthsocial",
-  handle: string,
-  limit: number = 20
-) {
-  try {
-    const db = await getDb();
-    if (!db) return null;
-    
-    const posts = await db
-      .select()
-      .from(socialMediaCache)
-      .where(
-        and(
-          eq(socialMediaCache.platform, platform),
-          eq(socialMediaCache.handle, handle)
-        )
-      )
-      .orderBy(socialMediaCache.createdAt)
-      .limit(limit);
-
-    // 检查缓存是否过期
-    if (posts.length > 0) {
-      const latestCacheTime = posts[0].cachedAt;
-      const cacheAge = Date.now() - latestCacheTime.getTime();
-      
-      if (cacheAge < CACHE_TTL_MS) {
-        console.log(`Using cached ${platform} posts for @${handle} (age: ${Math.round(cacheAge / 1000)}s)`);
-        return posts.map(post => ({
-          id: post.postId,
-          text: post.content,
-          created_at: post.createdAt.toISOString(),
-          url: post.url || "",
-          ...JSON.parse(post.metrics || "{}"),
-          media: JSON.parse(post.media || "[]"),
-        }));
-      } else {
-        console.log(`Cache expired for ${platform} @${handle} (age: ${Math.round(cacheAge / 1000)}s)`);
-      }
+export async function getCachedPosts(platform: 'twitter' | 'truthsocial', handle: string) {
+  const db = await getDb();
+  if (!db) return [];
+  const now = Date.now();
+  
+  const cached = await db
+    .select()
+    .from(socialMediaCache)
+    .where(and(
+      eq(socialMediaCache.platform, platform),
+      eq(socialMediaCache.handle, handle)
+    ))
+    .orderBy(desc(socialMediaCache.createdAt));
+  
+  // 检查缓存是否过期
+  if (cached.length > 0) {
+    const cacheAge = now - new Date(cached[0].cachedAt).getTime();
+    if (cacheAge < CACHE_TTL_MS) {
+      return cached;
     }
-
-    return null; // 缓存不存在或已过期
-  } catch (error) {
-    console.error(`Error reading cache for ${platform} @${handle}:`, error);
-    return null;
   }
+  
+  return [];
 }
 
 /**
- * 刷新单个账号的缓存
+ * 缓存 Twitter 帖子
  */
-export async function refreshCache(
-  platform: "twitter" | "truthsocial",
-  handle: string
-) {
+async function cacheTwitterPosts(handle: string) {
   try {
-    console.log(`Refreshing ${platform} cache for @${handle}...`);
-
-    let posts: any[] = [];
-
-    if (platform === "twitter") {
-      posts = await getTwitterTweetsByUsername(handle, 20);
-    } else if (platform === "truthsocial") {
-      posts = await getTruthSocialPosts(handle, 20);
-    }
-
-    if (posts.length === 0) {
-      console.log(`No posts fetched for ${platform} @${handle}`);
+    console.log(`Fetching Twitter posts for ${handle}...`);
+    const tweets = await getTwitterTweetsByUsername(handle.replace('@', ''), 20);
+    
+    if (tweets.length === 0) {
+      console.log(`No Twitter posts found for ${handle}`);
       return;
     }
-
+    
     const db = await getDb();
     if (!db) return;
-
+    
     // 删除旧缓存
-    await db
-      .delete(socialMediaCache)
-      .where(
-        and(
-          eq(socialMediaCache.platform, platform),
-          eq(socialMediaCache.handle, handle)
-        )
-      );
-
-    // 插入新缓存
-    const cacheEntries = posts.map((post: any) => ({
-      platform,
-      handle,
-      postId: post.id,
-      content: post.text || "",
-      createdAt: new Date(post.created_at),
-      metrics: JSON.stringify({
-        retweet_count: post.retweet_count || 0,
-        favorite_count: post.favorite_count || 0,
-        reply_count: post.reply_count || 0,
-        quote_count: post.quote_count || 0,
-        views_count: post.views_count || 0,
-      }),
-      url: post.url || "",
-      media: JSON.stringify(post.media || []),
-    }));
-
-    await db.insert(socialMediaCache).values(cacheEntries);
-
-    console.log(`Successfully cached ${posts.length} ${platform} posts for @${handle}`);
+    await db.delete(socialMediaCache).where(and(
+      eq(socialMediaCache.platform, 'twitter'),
+      eq(socialMediaCache.handle, handle)
+    ));
+    
+    // 插入新缓存（带翻译）
+    for (const tweet of tweets) {
+      const contentZh = await translateText(tweet.text);
+      await db.insert(socialMediaCache).values({
+        platform: 'twitter',
+        handle,
+        postId: tweet.id,
+        content: tweet.text,
+        contentZh,
+        createdAt: new Date(tweet.created_at).toISOString().slice(0, 19).replace('T', ' '),
+        metrics: JSON.stringify({
+          likes: tweet.favorite_count || 0,
+          retweets: tweet.retweet_count || 0,
+          replies: tweet.reply_count || 0,
+          quotes: tweet.quote_count || 0,
+        }),
+      });
+    }
+    
+    console.log(`Successfully cached ${tweets.length} twitter posts for ${handle}`);
   } catch (error) {
-    console.error(`Error refreshing cache for ${platform} @${handle}:`, error);
+    console.error(`Error caching Twitter posts for ${handle}:`, error);
   }
 }
 
 /**
- * 刷新所有账号的缓存
+ * 缓存 Truth Social 帖子
  */
-export async function refreshAllCaches() {
-  console.log("Starting background cache refresh...");
-  
-  for (const account of ACCOUNTS_TO_CACHE) {
-    await refreshCache(account.platform, account.handle);
+async function cacheTruthSocialPosts(handle: string) {
+  try {
+    if (!isTruthSocialConfigured()) {
+      console.log('Truth Social not configured, skipping cache');
+      return;
+    }
+    
+    console.log(`Fetching Truth Social posts for ${handle}...`);
+    const posts = await getTruthSocialPosts(handle.replace('@', ''), 20);
+    
+    if (posts.length === 0) {
+      console.log(`No Truth Social posts found for ${handle}`);
+      return;
+    }
+    
+    const db = await getDb();
+    if (!db) return;
+    
+    // 删除旧缓存
+    await db.delete(socialMediaCache).where(and(
+      eq(socialMediaCache.platform, 'truthsocial'),
+      eq(socialMediaCache.handle, handle)
+    ));
+    
+    // 插入新缓存（带翻译）
+    for (const post of posts) {
+      const contentZh = await translateText(post.text);
+      await db.insert(socialMediaCache).values({
+        platform: 'truthsocial',
+        handle,
+        postId: post.id,
+        content: post.text,
+        contentZh,
+        createdAt: post.created_at,
+        metrics: JSON.stringify({
+          likes: post.favourites_count || 0,
+          retweets: post.reblogs_count || 0,
+          replies: post.replies_count || 0,
+        }),
+      });
+    }
+    
+    console.log(`Successfully cached ${posts.length} truthsocial posts for ${handle}`);
+  } catch (error) {
+    console.error(`Error caching Truth Social posts for ${handle}:`, error);
   }
-  
-  console.log("Background cache refresh completed");
 }
 
 /**
- * 启动后台定时刷新任务
+ * 刷新所有缓存
  */
-export function startCacheRefreshJob() {
-  console.log(`Starting cache refresh job (interval: ${REFRESH_INTERVAL_MS / 1000}s)`);
+async function refreshAllCaches() {
+  console.log('Starting background cache refresh...');
+  
+  for (const { platform, handle } of ACCOUNTS_TO_CACHE) {
+    if (platform === 'twitter') {
+      await cacheTwitterPosts(handle);
+    } else if (platform === 'truthsocial') {
+      await cacheTruthSocialPosts(handle);
+    }
+  }
+  
+  console.log('Background cache refresh completed');
+}
 
+/**
+ * 启动定时刷新任务
+ */
+export function startCacheRefreshTask() {
+  const REFRESH_INTERVAL_MS = 5 * 60 * 1000; // 5 分钟
+  
   // 立即执行一次
   refreshAllCaches();
-
-  // 定时执行
-  setInterval(() => {
-    refreshAllCaches();
-  }, REFRESH_INTERVAL_MS);
+  
+  // 定时刷新
+  setInterval(refreshAllCaches, REFRESH_INTERVAL_MS);
+  
+  console.log(`Cache refresh task started (interval: ${REFRESH_INTERVAL_MS / 1000}s)`);
 }

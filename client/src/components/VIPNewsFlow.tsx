@@ -146,7 +146,7 @@ export default function VIPNewsFlow({ watchlistTickers = [] }: { watchlistTicker
   const fetchPersonContent = useCallback(async (person: VIPPerson) => {
     setLoading(true);
     setOriginalTweets([]);
-
+    setRetweetsReplies([]);
     setTruthSocialPosts([]);
     setNewsFeed([]);
 
@@ -166,7 +166,20 @@ export default function VIPNewsFlow({ watchlistTickers = [] }: { watchlistTicker
         const tweets = data1?.result?.data?.json || data1?.result?.data || [];
         setOriginalTweets(Array.isArray(tweets) ? tweets : []);
 
-
+        // 2. 获取所有推文（用于分离转发和评论）
+        const input2 = encodeURIComponent(
+          JSON.stringify({
+            json: {
+              twitterHandle: person.twitterHandle,
+              limit: 40,
+            }
+          })
+        );
+        const resp2 = await fetch(`/api/trpc/newsflow.getPersonTwitter?input=${input2}`);
+        const data2 = await resp2.json();
+        const allTweets = data2?.result?.data?.json || data2?.result?.data || [];
+        const retweets = Array.isArray(allTweets) ? allTweets.filter((t: NewsItem) => t.isRetweet || t.isReply) : [];
+        setRetweetsReplies(retweets);
       }
 
       // 3. 获取 Truth Social 帖子
@@ -179,9 +192,15 @@ export default function VIPNewsFlow({ watchlistTickers = [] }: { watchlistTicker
             }
           })
         );
+        console.log('[VIPNewsFlow] Fetching Truth Social posts for:', person.truthSocialHandle);
         const resp3 = await fetch(`/api/trpc/newsflow.getPersonTruthSocial?input=${input3}`);
         const data3 = await resp3.json();
+        console.log('[VIPNewsFlow] Truth Social API response:', data3);
         const posts = data3?.result?.data?.json || data3?.result?.data || [];
+        console.log('[VIPNewsFlow] Truth Social posts parsed:', posts.length, 'posts');
+        if (posts.length > 0) {
+          console.log('[VIPNewsFlow] First post sample:', posts[0]);
+        }
         setTruthSocialPosts(Array.isArray(posts) ? posts : []);
       }
 
@@ -746,7 +765,6 @@ export default function VIPNewsFlow({ watchlistTickers = [] }: { watchlistTicker
                       >
                         💬 原创推文 {originalTweets.length > 0 && `(${originalTweets.length})`}
                       </button>
-
                     </>
                   )}
                   {selectedPerson.truthSocialHandle && (

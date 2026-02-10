@@ -1,0 +1,22 @@
+{
+  "query": "SELECT postId, content, createdAt, cachedAt FROM social_media_cache WHERE platform = 'twitter' ORDER BY createdAt DESC LIMIT 3;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2XUL6yzk1hX49rR.root --database 79BApBFg8fLtwjChCNUTDR --execute SELECT postId, content, createdAt, cachedAt FROM social_media_cache WHERE platform = 'twitter' ORDER BY createdAt DESC LIMIT 3;",
+  "rows": [
+    {
+      "postId": "2017417980594827718",
+      "content": "Last night I saw, “MELANIA,” for the second time. The audience loved it, and so do I. Check it out — A MUST SEE! https://t.co/rjwd5Appkv",
+      "createdAt": "2026-01-31 02:01:43",
+      "cachedAt": "2026-02-10 15:26:42"
+    }
+  ],
+  "messages": [
+    "2015833393917747502\tMELANIA, the Movie, is a MUST WATCH. Get your tickets today — Selling out, FAST!",
+    "Photo: Regine Mahaux",
+    "https://t.co/rjwd5Appkv https://t.co/vFpXfV0Mg0\t2026-01-26 17:05:08\t2026-02-10 15:26:42",
+    "2015469462808580414\tStarlink’s high-speed internet is available in your area.",
+    "Experience speeds up to 400+ Mbps to stream your favorite shows and sports, work from home, browse social media and more.\t2026-01-25 16:59:00\t2026-02-10 15:26:42"
+  ],
+  "stdout": "postId\tcontent\tcreatedAt\tcachedAt\n2017417980594827718\tLast night I saw, “MELANIA,” for the second time. The audience loved it, and so do I. Check it out — A MUST SEE! https://t.co/rjwd5Appkv\t2026-01-31 02:01:43\t2026-02-10 15:26:42\n2015833393917747502\tMELANIA, the Movie, is a MUST WATCH. Get your tickets today — Selling out, FAST!\n\nPhoto: Regine Mahaux\nhttps://t.co/rjwd5Appkv https://t.co/vFpXfV0Mg0\t2026-01-26 17:05:08\t2026-02-10 15:26:42\n2015469462808580414\tStarlink’s high-speed internet is available in your area.\n\nExperience speeds up to 400+ Mbps to stream your favorite shows and sports, work from home, browse social media and more.\t2026-01-25 16:59:00\t2026-02-10 15:26:42\n",
+  "stderr": "",
+  "execution_time_ms": 1541
+}

@@ -134,13 +134,13 @@ export default function Home() {
             <span className="text-muted-foreground text-xs">加载中...</span>
           ) : q ? (
             <>
-              <span className="data-mono font-medium">${q.price?.toFixed(2) || '--'}</span>
+              <span className="data-mono font-medium">${q.price.toFixed(2)}</span>
               <span className={`data-mono text-xs px-2 py-0.5 rounded font-medium ${
-                (q.change || 0) >= 0 
+                q.change >= 0 
                   ? 'text-red-500 bg-red-500/10' 
                   : 'text-green-500 bg-green-500/10'
               }`}>
-                {(q.changePercent || 0) >= 0 ? '+' : ''}{q.changePercent?.toFixed(2) || '--'}%
+                {q.changePercent >= 0 ? '+' : ''}{q.changePercent.toFixed(2)}%
               </span>
             </>
           ) : (
@@ -173,14 +173,14 @@ export default function Home() {
         ) : q ? (
           <div className="flex items-end justify-between">
             <span className="data-mono text-lg font-bold">
-              {(q.price || 0) >= 10000 ? q.price?.toFixed(0) : q.price?.toFixed(2) || '--'}
+              {q.price >= 10000 ? q.price.toFixed(0) : q.price.toFixed(2)}
             </span>
             <span className={`data-mono text-sm font-medium px-2 py-0.5 rounded ${
-              (q.change || 0) >= 0 
+              q.change >= 0 
                 ? 'text-red-500 bg-red-500/10' 
                 : 'text-green-500 bg-green-500/10'
             }`}>
-              {(q.changePercent || 0) >= 0 ? '+' : ''}{q.changePercent?.toFixed(2) || '--'}%
+              {q.changePercent >= 0 ? '+' : ''}{q.changePercent.toFixed(2)}%
             </span>
           </div>
         ) : (
@@ -334,9 +334,9 @@ export default function Home() {
                 >
                   <span className="font-bold text-base tracking-wide">{stock.symbol}</span>
                   <div className="flex flex-col gap-1">
-                    <span className="data-mono text-sm font-medium">${stock.price?.toFixed(2) || '--'}</span>
+                    <span className="data-mono text-sm font-medium">${stock.price.toFixed(2)}</span>
                     <span className="data-mono text-xs px-2 py-1 rounded font-medium text-red-500 bg-red-500/10 text-center">
-                      +{stock.changePercent?.toFixed(2) || '--'}%
+                      +{stock.changePercent.toFixed(2)}%
                     </span>
                   </div>
                 </div>
@@ -375,9 +375,9 @@ export default function Home() {
                   <span className="font-bold text-base tracking-wide">{stock.symbol}</span>
                   <p className="text-xs text-muted-foreground line-clamp-2">{stock.reason}</p>
                   <div className="flex flex-col gap-1 mt-auto">
-                    <span className="data-mono text-sm font-medium">${stock.price?.toFixed(2) || '--'}</span>
+                    <span className="data-mono text-sm font-medium">${stock.price.toFixed(2)}</span>
                     <span className="data-mono text-xs px-2 py-1 rounded font-medium text-red-500 bg-red-500/10 text-center">
-                      +{stock.changePercent?.toFixed(2) || '--'}%
+                      +{stock.changePercent.toFixed(2)}%
                     </span>
                   </div>
                 </div>
@@ -423,13 +423,13 @@ export default function Home() {
                       >
                         <span className="font-semibold">{stock.symbol}</span>
                         <div className="flex flex-col items-end gap-1">
-                          <span className="data-mono text-xs">${stock.price?.toFixed(2) || '--'}</span>
+                          <span className="data-mono text-xs">${stock.price.toFixed(2)}</span>
                           <span className={`data-mono text-xs px-1.5 py-0.5 rounded ${
-                            (stock.changePercent || 0) >= 0
+                            stock.changePercent >= 0
                               ? 'text-red-500 bg-red-500/10'
                               : 'text-green-500 bg-green-500/10'
                           }`}>
-                            {(stock.changePercent || 0) >= 0 ? '+' : ''}{stock.changePercent?.toFixed(2) || '--'}%
+                            {stock.changePercent >= 0 ? '+' : ''}{stock.changePercent.toFixed(2)}%
                           </span>
                         </div>
                       </div>

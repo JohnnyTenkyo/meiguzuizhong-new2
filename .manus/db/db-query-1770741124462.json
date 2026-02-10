@@ -1,0 +1,9 @@
+{
+  "query": "ALTER TABLE social_media_cache ADD COLUMN contentZh TEXT AFTER content;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2XUL6yzk1hX49rR.root --database 79BApBFg8fLtwjChCNUTDR --execute ALTER TABLE social_media_cache ADD COLUMN contentZh TEXT AFTER content;",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 2781
+}

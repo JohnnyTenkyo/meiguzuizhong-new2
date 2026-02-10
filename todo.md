@@ -145,44 +145,32 @@
 - [ ] 创建检查点
 
 ## Truth Social Token 测试
-- [x] 发现 truthbrush（斯坦福大学维护）不需要 token
-- [x] 安装 truthbrush 库
-- [x] 配置 Truth Social 用户名和密码
-- [x] 测试 truthbrush CLI 获取特朗普帖子（成功）
-- [x] 创建 Python 辅助脚本
-- [x] 更新 truthSocialAdapter 使用 truthbrush
+- [ ] 测试最新的 Truth Social token
+- [ ] 验证能否获取特朗普帖子
+- [ ] 如果成功则集成到系统
+- [ ] 如果失败则提供替代方案
 - [ ] 创建检查点
 
-## VIP 信息流显示问题修复
-- [x] 检查 newsflowRouter 的 API 实现
-- [x] 检查 VIPNewsFlow 前端组件
-- [x] 修复 Python 版本问题（使用 python3.11）
-- [x] 测试 Truth Social 数据获取（成功）
-- [x] 添加 Twitter engagement 数据（点赞、转发、评论）
-- [x] 添加 Truth Social engagement 数据
-- [x] 修复 Home.tsx 中的 toFixed null 错误
-- [x] 测试前端显示（成功）
-- [ ] 创建修复后的检查点
-
-## Truth Social 显示和缓存优化
-- [x] 诊断 Truth Social 为什么没有显示（Python 版本问题、truthbrush CLI 问题）
-- [x] 删除转发/评论板块（API 不支持区分）
-- [x] 创建社交媒体缓存表（social_media_cache）
-- [x] 实现缓存写入逻辑（socialMediaCacheManager.ts）
-- [x] 实现缓存读取逻辑（5分钟过期）
-- [x] 实现定时刷新机制（每 5 分钟后台刷新）
-- [x] 修改 API 使用缓存（newsflowRouter.ts）
-- [x] 测试缓存功能（成功，加载速度极快）
-- [x] Truth Social 暂时禁用（API 太慢，40-50秒，影响用户体验）
+## Truth Social 数据不显示和 Twitter 日期错误修复
+- [ ] 诊断 Truth Social 为什么显示"暂无相关内容"
+- [ ] 检查缓存数据是否成功写入数据库
+- [ ] 检查前端 API 调用是否正确
+- [ ] 修复 Twitter 推文日期显示错误（2025/10/15 应该是最新日期）
+- [ ] 检查 Twitter 数据源的日期格式
+- [ ] 测试修复后的显示效果
 - [ ] 创建检查点
 
-## Twitter 推文排序和 Truth Social curl-cffi 集成
-- [x] 修复 Twitter 推文排序（最新在前，按 created_at 降序）
-- [x] 安装 curl-cffi Python 库（已安装 0.14.0）
-- [x] 使用 curl-cffi 重写 Truth Social Python 脚本（truth_social_cffi.py）
-- [x] 配置最新的 Truth Social 认证信息（registration-data token）
-- [x] 创建 shell 脚本包装器解决 Python 版本问题（run_truth_social.sh）
-- [x] 测试 Truth Social 数据获取（成功，<5秒）
-- [x] 启用 Truth Social 缓存刷新（20 条帖子成功缓存）
-- [x] 测试前端显示（20 条 Truth Social 帖子成功显示）
+## 修复 Truth Social 不显示 + 删除转发评论模块（最终修复）
+- [ ] 重新创建 truth_social_cffi.py（使用 curl-cffi）
+- [ ] 重新创建 run_truth_social.sh 包装器
+- [ ] 修改 truthSocialAdapter.ts 不使用 callPythonScript，改为直接 spawn bash
+- [ ] 启用 Truth Social 缓存刷新
+- [ ] 确认转发/评论模块已删除
+- [ ] 测试前端 Truth Social 显示
+- [ ] 创建检查点
+
+## 删除转发/评论标签 + Truth Social 中英文翻译
+- [ ] 删除 VIPNewsFlow 组件中的"转发/评论"标签
+- [ ] 为 Truth Social 添加中英文翻译功能（类似 Twitter）
+- [ ] 测试前端显示
 - [ ] 创建检查点

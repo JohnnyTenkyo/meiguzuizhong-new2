@@ -1,0 +1,75 @@
+{
+  "query": "SELECT * FROM social_media_cache WHERE platform = 'truthsocial' LIMIT 5;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2XUL6yzk1hX49rR.root --database 79BApBFg8fLtwjChCNUTDR --execute SELECT * FROM social_media_cache WHERE platform = 'truthsocial' LIMIT 5;",
+  "rows": [
+    {
+      "id": "1185",
+      "platform": "truthsocial",
+      "handle": "realDonaldTrump",
+      "postId": "116046425196102899",
+      "content": "",
+      "createdAt": "2026-02-10 12:52:04",
+      "metrics": "{\"retweet_count\":0,\"favorite_count\":0,\"reply_count\":0,\"quote_count\":0,\"views_count\":0}",
+      "url": "https://truthsocial.com/@realDonaldTrump/116046425196102899",
+      "media": "[]",
+      "updatedAt": "2026-02-10 13:59:44",
+      "cachedAt": "2026-02-10 13:59:44"
+    },
+    {
+      "id": "1186",
+      "platform": "truthsocial",
+      "handle": "realDonaldTrump",
+      "postId": "116046130334911104",
+      "content": "<span class=\"quote-inline\"><br/>RT: https://truthsocial.com/users/realDonaldTrump/statuses/116046128032274537</span>",
+      "createdAt": "2026-02-10 11:37:04",
+      "metrics": "{\"retweet_count\":0,\"favorite_count\":0,\"reply_count\":0,\"quote_count\":0,\"views_count\":0}",
+      "url": "https://truthsocial.com/@realDonaldTrump/116046130334911104",
+      "media": "[]",
+      "updatedAt": "2026-02-10 13:59:44",
+      "cachedAt": "2026-02-10 13:59:44"
+    },
+    {
+      "id": "1187",
+      "platform": "truthsocial",
+      "handle": "realDonaldTrump",
+      "postId": "116046128032274537",
+      "content": "",
+      "createdAt": "2026-02-10 11:36:29",
+      "metrics": "{\"retweet_count\":0,\"favorite_count\":0,\"reply_count\":0,\"quote_count\":0,\"views_count\":0}",
+      "url": "https://truthsocial.com/@realDonaldTrump/116046128032274537",
+      "media": "[]",
+      "updatedAt": "2026-02-10 13:59:44",
+      "cachedAt": "2026-02-10 13:59:44"
+    },
+    {
+      "id": "1188",
+      "platform": "truthsocial",
+      "handle": "realDonaldTrump",
+      "postId": "116046126163758879",
+      "content": "",
+      "createdAt": "2026-02-10 11:36:01",
+      "metrics": "{\"retweet_count\":0,\"favorite_count\":0,\"reply_count\":0,\"quote_count\":0,\"views_count\":0}",
+      "url": "https://truthsocial.com/@realDonaldTrump/116046126163758879",
+      "media": "[]",
+      "updatedAt": "2026-02-10 13:59:44",
+      "cachedAt": "2026-02-10 13:59:44"
+    },
+    {
+      "id": "1189",
+      "platform": "truthsocial",
+      "handle": "realDonaldTrump",
+      "postId": "116046124733896300",
+      "content": "<span class=\"quote-inline\"><br/>RT: https://truthsocial.com/users/realDonaldTrump/statuses/116046122963627074</span>",
+      "createdAt": "2026-02-10 11:35:39",
+      "metrics": "{\"retweet_count\":0,\"favorite_count\":0,\"reply_count\":0,\"quote_count\":0,\"views_count\":0}",
+      "url": "https://truthsocial.com/@realDonaldTrump/116046124733896300",
+      "media": "[]",
+      "updatedAt": "2026-02-10 13:59:44",
+      "cachedAt": "2026-02-10 13:59:44"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tplatform\thandle\tpostId\tcontent\tcreatedAt\tmetrics\turl\tmedia\tupdatedAt\tcachedAt\n1185\ttruthsocial\trealDonaldTrump\t116046425196102899\t\t2026-02-10 12:52:04\t{\"retweet_count\":0,\"favorite_count\":0,\"reply_count\":0,\"quote_count\":0,\"views_count\":0}\thttps://truthsocial.com/@realDonaldTrump/116046425196102899\t[]\t2026-02-10 13:59:44\t2026-02-10 13:59:44\n1186\ttruthsocial\trealDonaldTrump\t116046130334911104\t<span class=\"quote-inline\"><br/>RT: https://truthsocial.com/users/realDonaldTrump/statuses/116046128032274537</span>\t2026-02-10 11:37:04\t{\"retweet_count\":0,\"favorite_count\":0,\"reply_count\":0,\"quote_count\":0,\"views_count\":0}\thttps://truthsocial.com/@realDonaldTrump/116046130334911104\t[]\t2026-02-10 13:59:44\t2026-02-10 13:59:44\n1187\ttruthsocial\trealDonaldTrump\t116046128032274537\t\t2026-02-10 11:36:29\t{\"retweet_count\":0,\"favorite_count\":0,\"reply_count\":0,\"quote_count\":0,\"views_count\":0}\thttps://truthsocial.com/@realDonaldTrump/116046128032274537\t[]\t2026-02-10 13:59:44\t2026-02-10 13:59:44\n1188\ttruthsocial\trealDonaldTrump\t116046126163758879\t\t2026-02-10 11:36:01\t{\"retweet_count\":0,\"favorite_count\":0,\"reply_count\":0,\"quote_count\":0,\"views_count\":0}\thttps://truthsocial.com/@realDonaldTrump/116046126163758879\t[]\t2026-02-10 13:59:44\t2026-02-10 13:59:44\n1189\ttruthsocial\trealDonaldTrump\t116046124733896300\t<span class=\"quote-inline\"><br/>RT: https://truthsocial.com/users/realDonaldTrump/statuses/116046122963627074</span>\t2026-02-10 11:35:39\t{\"retweet_count\":0,\"favorite_count\":0,\"reply_count\":0,\"quote_count\":0,\"views_count\":0}\thttps://truthsocial.com/@realDonaldTrump/116046124733896300\t[]\t2026-02-10 13:59:44\t2026-02-10 13:59:44\n",
+  "stderr": "",
+  "execution_time_ms": 1534
+}

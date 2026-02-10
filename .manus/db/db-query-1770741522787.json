@@ -1,0 +1,55 @@
+{
+  "query": "SELECT id, platform, handle, LEFT(content, 100) as content_preview, LEFT(contentZh, 100) as contentZh_preview, createdAt, updatedAt FROM social_media_cache WHERE platform = 'truthsocial' ORDER BY createdAt DESC LIMIT 5;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2XUL6yzk1hX49rR.root --database 79BApBFg8fLtwjChCNUTDR --execute SELECT id, platform, handle, LEFT(content, 100) as content_preview, LEFT(contentZh, 100) as contentZh_preview, createdAt, updatedAt FROM social_media_cache WHERE platform = 'truthsocial' ORDER BY createdAt DESC LIMIT 5;",
+  "rows": [
+    {
+      "id": "60593",
+      "platform": "truthsocial",
+      "handle": "@realDonaldTrump",
+      "content_preview": "Post from February 10, 2026",
+      "contentZh_preview": "2026 年 2 月 10 日发布",
+      "createdAt": "2026-02-10 12:52:03",
+      "updatedAt": "2026-02-10 16:35:53"
+    },
+    {
+      "id": "60594",
+      "platform": "truthsocial",
+      "handle": "@realDonaldTrump",
+      "content_preview": "RT: https://truthsocial.com/users/realDonaldTrump/statuses/116046128032274537",
+      "contentZh_preview": "RT：https://truthsocial.com/users/realDonaldTrump/statuses/116046128032274537",
+      "createdAt": "2026-02-10 11:37:04",
+      "updatedAt": "2026-02-10 16:35:53"
+    },
+    {
+      "id": "60595",
+      "platform": "truthsocial",
+      "handle": "@realDonaldTrump",
+      "content_preview": "Post from February 10, 2026",
+      "contentZh_preview": "2026 年 2 月 10 日发布",
+      "createdAt": "2026-02-10 11:36:29",
+      "updatedAt": "2026-02-10 16:35:54"
+    },
+    {
+      "id": "60596",
+      "platform": "truthsocial",
+      "handle": "@realDonaldTrump",
+      "content_preview": "Post from February 10, 2026",
+      "contentZh_preview": "2026 年 2 月 10 日发布",
+      "createdAt": "2026-02-10 11:36:00",
+      "updatedAt": "2026-02-10 16:35:54"
+    },
+    {
+      "id": "60597",
+      "platform": "truthsocial",
+      "handle": "@realDonaldTrump",
+      "content_preview": "RT: https://truthsocial.com/users/realDonaldTrump/statuses/116046122963627074",
+      "contentZh_preview": "RT：https://truthsocial.com/users/realDonaldTrump/statuses/116046122963627074",
+      "createdAt": "2026-02-10 11:35:38",
+      "updatedAt": "2026-02-10 16:35:54"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tplatform\thandle\tcontent_preview\tcontentZh_preview\tcreatedAt\tupdatedAt\n60593\ttruthsocial\t@realDonaldTrump\tPost from February 10, 2026\t2026 年 2 月 10 日发布\t2026-02-10 12:52:03\t2026-02-10 16:35:53\n60594\ttruthsocial\t@realDonaldTrump\tRT: https://truthsocial.com/users/realDonaldTrump/statuses/116046128032274537\tRT：https://truthsocial.com/users/realDonaldTrump/statuses/116046128032274537\t2026-02-10 11:37:04\t2026-02-10 16:35:53\n60595\ttruthsocial\t@realDonaldTrump\tPost from February 10, 2026\t2026 年 2 月 10 日发布\t2026-02-10 11:36:29\t2026-02-10 16:35:54\n60596\ttruthsocial\t@realDonaldTrump\tPost from February 10, 2026\t2026 年 2 月 10 日发布\t2026-02-10 11:36:00\t2026-02-10 16:35:54\n60597\ttruthsocial\t@realDonaldTrump\tRT: https://truthsocial.com/users/realDonaldTrump/statuses/116046122963627074\tRT：https://truthsocial.com/users/realDonaldTrump/statuses/116046122963627074\t2026-02-10 11:35:38\t2026-02-10 16:35:54\n",
+  "stderr": "",
+  "execution_time_ms": 1518
+}

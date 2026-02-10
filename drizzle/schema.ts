@@ -1,174 +1,106 @@
-import { bigint, decimal, int, mysqlEnum, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core";
+import { mysqlTable, mysqlSchema, AnyMySqlColumn, foreignKey, bigint, int, varchar, decimal, timestamp, mysqlEnum, index, text } from "drizzle-orm/mysql-core"
+import { sql } from "drizzle-orm"
 
-/**
- * Core user table backing auth flow.
- * Extend this file with additional tables as your product grows.
- * Columns use camelCase to match both database fields and generated types.
- */
-export const users = mysqlTable("users", {
-  /**
-   * Surrogate primary key. Auto-incremented numeric value managed by the database.
-   * Use this for relations between tables.
-   */
-  id: int("id").autoincrement().primaryKey(),
-  /** Manus OAuth identifier (openId) returned from the OAuth callback. Unique per user. */
-  openId: varchar("openId", { length: 64 }).notNull().unique(),
-  name: text("name"),
-  email: varchar("email", { length: 320 }),
-  loginMethod: varchar("loginMethod", { length: 64 }),
-  role: mysqlEnum("role", ["user", "admin"]).default("user").notNull(),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
-  lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull(),
-});
-
-export type User = typeof users.$inferSelect;
-export type InsertUser = typeof users.$inferInsert;
-
-/**
- * Local users table for username/password authentication
- */
-export const localUsers = mysqlTable("local_users", {
-  id: int("id").autoincrement().primaryKey(),
-  username: varchar("username", { length: 64 }).notNull().unique(),
-  passwordHash: varchar("passwordHash", { length: 256 }).notNull(),
-  name: varchar("name", { length: 128 }),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
-  lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull(),
-});
-
-export type LocalUser = typeof localUsers.$inferSelect;
-export type InsertLocalUser = typeof localUsers.$inferInsert;
-
-/**
- * Watchlist table for storing user's favorite stocks
- */
-export const watchlist = mysqlTable("watchlist", {
-  id: int("id").autoincrement().primaryKey(),
-  userId: int("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
-  symbol: varchar("symbol", { length: 20 }).notNull(),
-  addedAt: timestamp("addedAt").defaultNow().notNull(),
-});
-
-export type Watchlist = typeof watchlist.$inferSelect;
-export type InsertWatchlist = typeof watchlist.$inferInsert;
-
-/**
- * Backtest sessions - each session is a "save file" for the backtest system
- */
-export const backtestSessions = mysqlTable("backtest_sessions", {
-  id: int("id").autoincrement().primaryKey(),
-  localUserId: int("localUserId").notNull().references(() => localUsers.id, { onDelete: "cascade" }),
-  name: varchar("name", { length: 128 }).notNull(),
-  initialBalance: decimal("initialBalance", { precision: 16, scale: 2 }).notNull(),
-  currentBalance: decimal("currentBalance", { precision: 16, scale: 2 }).notNull(),
-  /** Total assets (cash + position market value) */
-  totalAssets: decimal("totalAssets", { precision: 16, scale: 2 }),
-  /** Total profit/loss amount */
-  totalPnL: decimal("totalPnL", { precision: 16, scale: 2 }),
-  /** Total profit/loss percentage */
-  totalPnLPercent: decimal("totalPnLPercent", { precision: 10, scale: 4 }),
-  /** The simulation start date (YYYYMMDD as bigint for easy comparison) */
-  startDate: bigint("startDate", { mode: "number" }).notNull(),
-  /** The current simulation date the user has advanced to */
-  currentDate: bigint("currentDate", { mode: "number" }).notNull(),
-  /** Current time interval being viewed */
-  currentInterval: varchar("currentInterval", { length: 10 }).default("1d"),
-  status: mysqlEnum("status", ["active", "archived"]).default("active").notNull(),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
-});
-
-export type BacktestSession = typeof backtestSessions.$inferSelect;
-export type InsertBacktestSession = typeof backtestSessions.$inferInsert;
-
-/**
- * Backtest trades - buy/sell records within a session
- */
-export const backtestTrades = mysqlTable("backtest_trades", {
-  id: int("id").autoincrement().primaryKey(),
-  sessionId: int("sessionId").notNull().references(() => backtestSessions.id, { onDelete: "cascade" }),
-  symbol: varchar("symbol", { length: 20 }).notNull(),
-  type: mysqlEnum("type", ["buy", "sell"]).notNull(),
-  quantity: int("quantity").notNull(),
-  price: decimal("price", { precision: 16, scale: 4 }).notNull(),
-  /** Total amount = quantity * price */
-  amount: decimal("amount", { precision: 16, scale: 2 }).notNull(),
-  /** The simulation date when this trade happened */
-  tradeDate: bigint("tradeDate", { mode: "number" }).notNull(),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-});
-
-export type BacktestTrade = typeof backtestTrades.$inferSelect;
-export type InsertBacktestTrade = typeof backtestTrades.$inferInsert;
-
-/**
- * Backtest positions - current holdings in a session
- */
 export const backtestPositions = mysqlTable("backtest_positions", {
-  id: int("id").autoincrement().primaryKey(),
-  sessionId: int("sessionId").notNull().references(() => backtestSessions.id, { onDelete: "cascade" }),
-  symbol: varchar("symbol", { length: 20 }).notNull(),
-  quantity: int("quantity").notNull().default(0),
-  /** Average cost per share */
-  avgCost: decimal("avgCost", { precision: 16, scale: 4 }).notNull(),
-  /** Total invested amount */
-  totalCost: decimal("totalCost", { precision: 16, scale: 2 }).notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+	id: int().autoincrement().notNull(),
+	sessionId: int().notNull().references(() => backtestSessions.id, { onDelete: "cascade" } ),
+	symbol: varchar({ length: 20 }).notNull(),
+	quantity: int().default(0).notNull(),
+	avgCost: decimal({ precision: 16, scale: 4 }).notNull(),
+	totalCost: decimal({ precision: 16, scale: 2 }).notNull(),
+	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
 });
 
-export type BacktestPosition = typeof backtestPositions.$inferSelect;
-export type InsertBacktestPosition = typeof backtestPositions.$inferInsert;
-
-/**
- * Custom tracked people - users can add their own people to track
- */
-export const trackedPeople = mysqlTable("tracked_people", {
-  id: int("id").autoincrement().primaryKey(),
-  userId: int("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
-  name: varchar("name", { length: 128 }).notNull(),
-  nameZh: varchar("nameZh", { length: 128 }),
-  title: varchar("title", { length: 256 }),
-  titleZh: varchar("titleZh", { length: 256 }),
-  twitterHandle: varchar("twitterHandle", { length: 64 }),
-  truthSocialHandle: varchar("truthSocialHandle", { length: 64 }),
-  category: mysqlEnum("category", ["政治", "科技", "金融", "商业", "其他"]).default("其他").notNull(),
-  avatarEmoji: varchar("avatarEmoji", { length: 10 }).default("👤"),
-  addedAt: timestamp("addedAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+export const backtestSessions = mysqlTable("backtest_sessions", {
+	id: int().autoincrement().notNull(),
+	localUserId: int().notNull().references(() => localUsers.id, { onDelete: "cascade" } ),
+	name: varchar({ length: 128 }).notNull(),
+	initialBalance: decimal({ precision: 16, scale: 2 }).notNull(),
+	currentBalance: decimal({ precision: 16, scale: 2 }).notNull(),
+	totalAssets: decimal({ precision: 16, scale: 2 }),
+	totalPnL: decimal({ precision: 16, scale: 2 }),
+	totalPnLpercent: decimal({ precision: 10, scale: 4 }),
+	startDate: bigint({ mode: "number" }).notNull(),
+	currentDate: bigint({ mode: "number" }).notNull(),
+	currentInterval: varchar({ length: 10 }).default('1d'),
+	status: mysqlEnum(['active','archived']).default('active').notNull(),
+	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
 });
 
-export type TrackedPerson = typeof trackedPeople.$inferSelect;
-export type InsertTrackedPerson = typeof trackedPeople.$inferInsert;
+export const backtestTrades = mysqlTable("backtest_trades", {
+	id: int().autoincrement().notNull(),
+	sessionId: int().notNull().references(() => backtestSessions.id, { onDelete: "cascade" } ),
+	symbol: varchar({ length: 20 }).notNull(),
+	type: mysqlEnum(['buy','sell']).notNull(),
+	quantity: int().notNull(),
+	price: decimal({ precision: 16, scale: 4 }).notNull(),
+	amount: decimal({ precision: 16, scale: 2 }).notNull(),
+	tradeDate: bigint({ mode: "number" }).notNull(),
+	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+});
 
-/**
- * Social media posts cache - stores Twitter and Truth Social posts
- * Refreshed periodically by background jobs to improve loading speed
- */
+export const localUsers = mysqlTable("local_users", {
+	id: int().autoincrement().notNull(),
+	username: varchar({ length: 64 }).notNull(),
+	passwordHash: varchar({ length: 256 }).notNull(),
+	name: varchar({ length: 128 }),
+	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
+	lastSignedIn: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+},
+(table) => [
+	index("local_users_username_unique").on(table.username),
+]);
+
 export const socialMediaCache = mysqlTable("social_media_cache", {
-  id: int("id").autoincrement().primaryKey(),
-  /** Platform: 'twitter' or 'truthsocial' */
-  platform: mysqlEnum("platform", ["twitter", "truthsocial"]).notNull(),
-  /** User handle (e.g., 'realDonaldTrump') */
-  handle: varchar("handle", { length: 64 }).notNull(),
-  /** Post ID from the platform */
-  postId: varchar("postId", { length: 64 }).notNull(),
-  /** Post content/text */
-  content: text("content").notNull(),
-  /** Post creation timestamp */
-  createdAt: timestamp("createdAt").notNull(),
-  /** Engagement metrics (JSON) */
-  metrics: text("metrics"),
-  /** Post URL */
-  url: text("url"),
-  /** Media attachments (JSON array) */
-  media: text("media"),
-  /** Last updated timestamp */
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
-  /** Cache timestamp */
-  cachedAt: timestamp("cachedAt").defaultNow().notNull(),
+	id: int().autoincrement().notNull(),
+	platform: mysqlEnum(['twitter','truthsocial']).notNull(),
+	handle: varchar({ length: 64 }).notNull(),
+	postId: varchar({ length: 64 }).notNull(),
+	content: text().notNull(),
+	contentZh: text(),
+	createdAt: timestamp({ mode: 'string' }).notNull(),
+	metrics: text(),
+	url: text(),
+	media: text(),
+	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
+	cachedAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
 });
 
-export type SocialMediaCache = typeof socialMediaCache.$inferSelect;
-export type InsertSocialMediaCache = typeof socialMediaCache.$inferInsert;
+export const trackedPeople = mysqlTable("tracked_people", {
+	id: int().autoincrement().notNull(),
+	userId: int().notNull().references(() => users.id, { onDelete: "cascade" } ),
+	name: varchar({ length: 128 }).notNull(),
+	nameZh: varchar({ length: 128 }),
+	title: varchar({ length: 256 }),
+	titleZh: varchar({ length: 256 }),
+	twitterHandle: varchar({ length: 64 }),
+	truthSocialHandle: varchar({ length: 64 }),
+	category: mysqlEnum(['政治','科技','金融','商业','其他']).default('其他').notNull(),
+	avatarEmoji: varchar({ length: 10 }).default('👤'),
+	addedAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
+});
+
+export const users = mysqlTable("users", {
+	id: int().autoincrement().notNull(),
+	openId: varchar({ length: 64 }).notNull(),
+	name: text(),
+	email: varchar({ length: 320 }),
+	loginMethod: varchar({ length: 64 }),
+	role: mysqlEnum(['user','admin']).default('user').notNull(),
+	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
+	lastSignedIn: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+},
+(table) => [
+	index("users_openId_unique").on(table.openId),
+]);
+
+export const watchlist = mysqlTable("watchlist", {
+	id: int().autoincrement().notNull(),
+	userId: int().notNull().references(() => users.id, { onDelete: "cascade" } ),
+	symbol: varchar({ length: 20 }).notNull(),
+	addedAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+});

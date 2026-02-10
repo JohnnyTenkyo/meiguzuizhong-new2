@@ -182,13 +182,6 @@ export async function getTwitterTweetsByUsername(
       }
     }
     
-    // 按时间降序排序（最新在前）
-    posts.sort((a, b) => {
-      const dateA = new Date(a.created_at).getTime();
-      const dateB = new Date(b.created_at).getTime();
-      return dateB - dateA;
-    });
-    
     return posts;
   } catch (error: any) {
     console.error('Error fetching Twitter tweets:', error);

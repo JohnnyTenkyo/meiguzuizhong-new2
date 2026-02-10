@@ -1,0 +1,23 @@
+{
+  "query": "SELECT * FROM social_media_cache LIMIT 1;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2XUL6yzk1hX49rR.root --database 79BApBFg8fLtwjChCNUTDR --execute SELECT * FROM social_media_cache LIMIT 1;",
+  "rows": [
+    {
+      "id": "1185",
+      "platform": "truthsocial",
+      "handle": "realDonaldTrump",
+      "postId": "116046425196102899",
+      "content": "",
+      "createdAt": "2026-02-10 12:52:04",
+      "metrics": "{\"retweet_count\":0,\"favorite_count\":0,\"reply_count\":0,\"quote_count\":0,\"views_count\":0}",
+      "url": "https://truthsocial.com/@realDonaldTrump/116046425196102899",
+      "media": "[]",
+      "updatedAt": "2026-02-10 13:59:44",
+      "cachedAt": "2026-02-10 13:59:44"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tplatform\thandle\tpostId\tcontent\tcreatedAt\tmetrics\turl\tmedia\tupdatedAt\tcachedAt\n1185\ttruthsocial\trealDonaldTrump\t116046425196102899\t\t2026-02-10 12:52:04\t{\"retweet_count\":0,\"favorite_count\":0,\"reply_count\":0,\"quote_count\":0,\"views_count\":0}\thttps://truthsocial.com/@realDonaldTrump/116046425196102899\t[]\t2026-02-10 13:59:44\t2026-02-10 13:59:44\n",
+  "stderr": "",
+  "execution_time_ms": 1541
+}

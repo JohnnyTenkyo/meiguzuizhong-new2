@@ -502,15 +502,8 @@ export const newsflowRouter = router({
           return [];
         }
 
-        // 优先从缓存获取
-        const cachedPosts = await getCachedPosts("twitter", input.twitterHandle, input.limit * 2);
-        let tweets = cachedPosts;
-        
-        // 如果缓存不存在或已过期，从 API 获取
-        if (!tweets) {
-          console.log(`Cache miss for Twitter @${input.twitterHandle}, fetching from API...`);
-          tweets = await getTwitterTweetsByUsername(input.twitterHandle, input.limit * 2);
-        }
+        // 获取所有推文
+        const tweets = await getTwitterTweetsByUsername(input.twitterHandle, input.limit * 2);
         
         // 过滤出原创推文（非转发且非评论）
         const originalTweets = tweets.filter(tweet => !tweet.is_retweet && !tweet.is_reply);
@@ -563,6 +556,31 @@ export const newsflowRouter = router({
           return [];
         }
 
+        // 尝试从缓存获取
+        const cached = await getCachedPosts('truthsocial', `@${input.truthSocialHandle}`);
+        if (cached.length > 0) {
+          console.log(`Using cached truthsocial posts for @${input.truthSocialHandle} (age: ${Math.floor((Date.now() - new Date(cached[0].cachedAt).getTime()) / 1000)}s)`);
+                const items = cached.map(c => {
+            const metrics = c.metrics ? JSON.parse(c.metrics) : {};
+            return {
+              title: c.content,
+              titleZh: c.contentZh || c.content,
+              link: c.url || `https://truthsocial.com/@${input.truthSocialHandle}/posts/${c.postId}`,
+              pubDate: c.createdAt,
+              source: "Truth Social",
+              type: "social" as const,
+              engagement: {
+                likes: metrics.likes || 0,
+                retweets: metrics.retweets || 0,
+                replies: metrics.replies || 0,
+              },
+            };
+          });
+          
+          return items;
+        }
+
+        // 缓存未命中，直接获取（但不会触发，因为后台刷新任务会定期更新）
         const posts = await getTruthSocialPosts(input.truthSocialHandle, input.limit);
         
         const items = posts.map((post) => ({
@@ -677,11 +695,6 @@ export const newsflowRouter = router({
               pubDate: post.created_at,
               source: "Truth Social",
               type: "social" as const,
-              engagement: {
-                likes: post.favourites_count || 0,
-                retweets: post.reblogs_count || 0,
-                replies: post.replies_count || 0,
-              },
             }));
             socialItems.push(...truthItems);
           } catch (err) {
@@ -700,12 +713,6 @@ export const newsflowRouter = router({
               pubDate: tweet.created_at,
               source: "X (Twitter)",
               type: "social" as const,
-              engagement: {
-                likes: tweet.favorite_count || 0,
-                retweets: tweet.retweet_count || 0,
-                replies: tweet.reply_count || 0,
-                quotes: tweet.quote_count || 0,
-              },
             }));
             socialItems.push(...twitterItems);
           } catch (err) {
