@@ -1,44 +1,74 @@
 #!/usr/bin/env python3
 """
 Truth Social Helper Script
-使用 truthbrush 库获取 Truth Social 数据
+使用 curl-cffi 直接调用 Truth Social API，绕过 Cloudflare
 """
 import sys
 import json
 import os
-from truthbrush import Api
+from curl_cffi import requests
+
+# Truth Social API 基础 URL
+BASE_URL = "https://truthsocial.com/api/v1"
+
+def get_headers(access_token):
+    """构建请求头"""
+    return {
+        "Authorization": f"Bearer {access_token}",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36",
+        "Accept": "application/json",
+        "Accept-Language": "en-US,en;q=0.9",
+        "Referer": "https://truthsocial.com/",
+        "Origin": "https://truthsocial.com",
+    }
 
 def get_posts(username, limit=20):
     """获取用户的帖子"""
     try:
-        token = os.environ.get('TRUTHSOCIAL_TOKEN')
-        if not token:
-            return {'success': False, 'error': 'TRUTHSOCIAL_TOKEN not set'}
+        access_token = os.environ.get('TRUTHSOCIAL_ACCESS_TOKEN')
         
-        api = Api(token=token)
+        if not access_token:
+            return {'success': False, 'error': 'TRUTHSOCIAL_ACCESS_TOKEN not set'}
         
-        # 查找用户
-        user_info = api.lookup(username)
-        if not user_info:
-            return {'success': False, 'error': f'User @{username} not found'}
+        # 首先查找用户 ID
+        lookup_url = f"{BASE_URL}/accounts/lookup"
+        params = {"acct": username}
+        headers = get_headers(access_token)
         
-        # 获取用户ID
-        user_id = user_info.get('id')
+        # 使用 curl_cffi 发送请求（绕过 Cloudflare）
+        response = requests.get(
+            lookup_url,
+            params=params,
+            headers=headers,
+            impersonate="chrome110",
+            timeout=10
+        )
+        
+        if response.status_code != 200:
+            return {'success': False, 'error': f'Failed to lookup user: {response.status_code}'}
+        
+        user_data = response.json()
+        user_id = user_data.get('id')
+        
         if not user_id:
             return {'success': False, 'error': 'User ID not found'}
         
-        # 获取帖子（pull_statuses 返回生成器）
-        posts_generator = api.pull_statuses(username)
-        posts = []
+        # 获取用户的帖子
+        statuses_url = f"{BASE_URL}/accounts/{user_id}/statuses"
+        params = {"limit": limit}
         
-        try:
-            for i, post in enumerate(posts_generator):
-                if i >= limit:
-                    break
-                posts.append(post)
-        except Exception as e:
-            # 如果生成器出错，返回已获取的帖子
-            print(f"Warning: Error while fetching posts: {e}", file=sys.stderr)
+        response = requests.get(
+            statuses_url,
+            params=params,
+            headers=headers,
+            impersonate="chrome110",
+            timeout=10
+        )
+        
+        if response.status_code != 200:
+            return {'success': False, 'error': f'Failed to fetch posts: {response.status_code}'}
+        
+        posts = response.json()
         
         return {
             'success': True,
@@ -49,22 +79,35 @@ def get_posts(username, limit=20):
     except Exception as e:
         return {'success': False, 'error': str(e)}
 
-def get_user_info():
-    """获取当前认证用户信息"""
+def get_user_info(username):
+    """获取用户信息"""
     try:
-        token = os.environ.get('TRUTHSOCIAL_TOKEN')
-        if not token:
-            return {'success': False, 'error': 'TRUTHSOCIAL_TOKEN not set'}
+        access_token = os.environ.get('TRUTHSOCIAL_ACCESS_TOKEN')
         
-        api = Api(token=token)
-        auth_id = api.get_auth_id()
+        if not access_token:
+            return {'success': False, 'error': 'TRUTHSOCIAL_ACCESS_TOKEN not set'}
+        
+        lookup_url = f"{BASE_URL}/accounts/lookup"
+        params = {"acct": username}
+        headers = get_headers(access_token)
+        
+        # 使用 curl_cffi 发送请求（绕过 Cloudflare）
+        response = requests.get(
+            lookup_url,
+            params=params,
+            headers=headers,
+            impersonate="chrome110",
+            timeout=10
+        )
+        
+        if response.status_code != 200:
+            return {'success': False, 'error': f'Failed to lookup user: {response.status_code}'}
+        
+        user_info = response.json()
         
         return {
             'success': True,
-            'user': {
-                'id': auth_id,
-                'authenticated': True
-            }
+            'user': user_info
         }
         
     except Exception as e:
@@ -87,7 +130,12 @@ def main():
         result = get_posts(username, limit)
         
     elif command == 'get_user_info':
-        result = get_user_info()
+        if len(sys.argv) < 3:
+            print(json.dumps({'success': False, 'error': 'Username required'}))
+            sys.exit(1)
+        
+        username = sys.argv[2]
+        result = get_user_info(username)
         
     else:
         result = {'success': False, 'error': f'Unknown command: {command}'}

@@ -128,3 +128,18 @@
 - [ ] 检查所有路由中的其他 API 调用
 - [ ] 监控消费金额变化
 - [ ] 创建完全零成本版本
+
+## 免费社交媒体信息流方案
+- [x] 搜索免费的 Twitter/X API 或抓取方案（找到 twikit）
+- [x] 搜索免赹的 Truth Social API 或抓取方案（curl-cffi）
+- [x] 尝试 Truth Social（token 已过期）
+- [x] 尝试 ntscraper（Nitter 实例已关闭）
+- [x] 尝试 twikit（Cloudflare 阻止）
+- [x] 发现 x-kit 项目（使用 twitter-openapi-typescript）
+- [x] 安装 twitter-openapi-typescript npm 包
+- [x] 更新 twitterAdapter 使用 twitter-openapi-typescript
+- [x] 配置 Twitter AUTH_TOKEN 和 CT0 环境变量
+- [x] 测试 Twitter 用户信息获取（成功）
+- [x] 测试 Twitter 推文获取（成功）
+- [ ] 测试 VIP 信息流显示
+- [ ] 创建检查点
